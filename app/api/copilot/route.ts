@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "question is required" }, { status: 400 });
   }
 
-  addMessage({ id: uuid(), role: "user", content: question, createdAt: new Date().toISOString() });
+  const userMessage = addMessage({ id: uuid(), role: "user", content: question, createdAt: new Date().toISOString() });
 
   const result = await answerQuestion(question);
 
@@ -29,5 +29,5 @@ export async function POST(req: NextRequest) {
     suggested: result.suggested,
   });
 
-  return NextResponse.json({ message, liveLLM: isLiveLLMConfigured() });
+  return NextResponse.json({ userMessage, message, liveLLM: isLiveLLMConfigured() });
 }

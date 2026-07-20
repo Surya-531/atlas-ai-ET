@@ -8,7 +8,6 @@ import type { Incident, RCAReport } from "@/lib/types";
 
 export default function RCAPage() {
   const [incidents, setIncidents] = useState<Incident[]>([]);
-  const [reports, setReports] = useState<RCAReport[]>([]);
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
   const [report, setReport] = useState<RCAReport | null>(null);
   const [generating, setGenerating] = useState(false);
@@ -16,7 +15,6 @@ export default function RCAPage() {
   useEffect(() => {
     fetch("/api/rca").then((r) => r.json()).then((d) => {
       setIncidents(d.incidents);
-      setReports(d.reports);
     });
   }, []);
 

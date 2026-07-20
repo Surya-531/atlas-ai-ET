@@ -13,6 +13,15 @@ const STARTER_QUESTIONS = [
   "What maintenance is due on Pump P-203?",
 ];
 
+function uniqueMessages(messages: CopilotMessage[]) {
+  const seen = new Set<string>();
+  return messages.filter((message) => {
+    if (seen.has(message.id)) return false;
+    seen.add(message.id);
+    return true;
+  });
+}
+
 export default function CopilotPage() {
   return (
     <Suspense fallback={null}>
@@ -27,10 +36,11 @@ function CopilotInner() {
   const [sending, setSending] = useState(false);
   const [expandedReasoning, setExpandedReasoning] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const optimisticIdRef = useRef(0);
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    fetch("/api/copilot").then((r) => r.json()).then((d) => setMessages(d.messages));
+    fetch("/api/copilot").then((r) => r.json()).then((d) => setMessages(uniqueMessages(d.messages ?? [])));
   }, []);
 
   useEffect(() => {
@@ -45,27 +55,27 @@ function CopilotInner() {
 
   async function send(question: string) {
     if (!question.trim() || sending) return;
+    const optimisticId = `temp-${Date.now()}-${optimisticIdRef.current++}`;
     setSending(true);
     setInput("");
-    setMessages((prev) => [
+    setMessages((prev) => uniqueMessages([
       ...prev,
-      { id: `temp-${Date.now()}`, role: "user", content: question, createdAt: new Date().toISOString() },
-    ]);
-    const res = await fetch("/api/copilot", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question }),
-    });
-    const data = await res.json();
-    setMessages((prev) => {
-      const withoutTemp = prev.filter((m) => !m.id.startsWith("temp-"));
-      return [
-        ...withoutTemp,
-        { id: `u-${Date.now()}`, role: "user", content: question, createdAt: new Date().toISOString() },
-        data.message,
-      ];
-    });
-    setSending(false);
+      { id: optimisticId, role: "user", content: question, createdAt: new Date().toISOString() },
+    ]));
+    try {
+      const res = await fetch("/api/copilot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question }),
+      });
+      const data = await res.json();
+      setMessages((prev) => {
+        const withoutOptimistic = prev.filter((m) => m.id !== optimisticId);
+        return uniqueMessages([...withoutOptimistic, data.userMessage, data.message].filter(Boolean));
+      });
+    } finally {
+      setSending(false);
+    }
   }
 
   return (
@@ -120,9 +130,9 @@ function CopilotInner() {
 
                   {m.citations && m.citations.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mb-3">
-                      {m.citations.map((c) => (
+                      {m.citations.map((c, i) => (
                         <span
-                          key={c.chunkId}
+                          key={`${m.id}-${c.chunkId}-${i}`}
                           title={c.snippet}
                           className="flex items-center gap-1 text-[10px] font-mono rounded-full px-2 py-1"
                           style={{ background: "var(--data-soft)", color: "var(--data)" }}
@@ -151,9 +161,9 @@ function CopilotInner() {
 
                   {m.suggested && m.suggested.length > 0 && (
                     <div className="mt-3 flex flex-wrap gap-1.5">
-                      {m.suggested.map((s) => (
+                      {m.suggested.map((s, i) => (
                         <button
-                          key={s}
+                          key={`${m.id}-${s}-${i}`}
                           onClick={() => send(s)}
                           className="text-[10px] hairline rounded-full px-2.5 py-1 hover:bg-[var(--surface-hover)]"
                         >
