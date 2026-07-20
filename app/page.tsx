@@ -2,13 +2,28 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Waves, FileStack, Share2, MessageSquareText, Siren } from "lucide-react";
+import {
+  ArrowRight,
+  Waves,
+  FileStack,
+  Share2,
+  MessageSquareText,
+  Siren,
+  AlertTriangle,
+  CheckCircle2,
+  Network,
+  Gauge,
+  ShieldCheck,
+  Factory,
+  Database,
+  BrainCircuit,
+} from "lucide-react";
 
 const EVIDENCE = [
   "Bearing vibration +23% vs. baseline",
   "Casing temperature +14% vs. baseline",
   "2 scheduled inspections skipped (Dec, Mar)",
-  "Matching bearing failure — Plant B, 2022",
+  "Matching bearing failure - Plant B, 2022",
   "OEM manual: replace within 30 days at this threshold",
 ];
 
@@ -21,18 +36,98 @@ const PILLARS = [
   {
     icon: Share2,
     title: "Living Knowledge Graph",
-    body: "Assets, technicians, regulations, and documents connect into one graph — so reasoning crosses department boundaries.",
+    body: "Assets, technicians, regulations, and documents connect into one graph - so reasoning crosses department boundaries.",
   },
   {
     icon: MessageSquareText,
     title: "GraphRAG Copilot",
-    body: "Every answer is grounded in retrieved evidence and graph traversal, with citations and a confidence score — never a guess.",
+    body: "Every answer is grounded in retrieved evidence and graph traversal, with citations and a confidence score - never a guess.",
   },
   {
     icon: Siren,
     title: "Predictive & Root Cause",
     body: "Risk scoring, remaining-useful-life forecasts, and automated root cause analysis with corrective and preventive actions.",
   },
+];
+
+const PROBLEM_POINTS = [
+  "Critical knowledge is scattered across PDFs, spreadsheets, incident reports, manuals, and technician notes.",
+  "Traditional dashboards show what is happening, but rarely explain why it is happening or what action should come next.",
+  "Maintenance teams lose time connecting asset history, regulations, inspection findings, and prior failures by hand.",
+  "Generic chatbots retrieve text, but they do not understand relationships between assets, people, documents, and events.",
+];
+
+const SOLUTION_STEPS = [
+  {
+    icon: FileStack,
+    title: "Ingest",
+    body: "Upload or paste manuals, inspections, incident reports, compliance notes, and maintenance records. ATLAS AI chunks, embeds, and prepares them for reasoning.",
+  },
+  {
+    icon: Network,
+    title: "Connect",
+    body: "Extracted entities become graph nodes: assets, parts, technicians, regulations, locations, incidents, and documents are linked into one operational map.",
+  },
+  {
+    icon: BrainCircuit,
+    title: "Reason",
+    body: "GraphRAG combines semantic retrieval with graph traversal, so answers include the evidence path, related history, confidence, and recommended action.",
+  },
+  {
+    icon: Gauge,
+    title: "Act",
+    body: "Risk scores, remaining-useful-life forecasts, root cause reports, compliance gaps, and executive insights turn intelligence into decisions.",
+  },
+];
+
+const WEBSITE_MODULES = [
+  {
+    route: "/dashboard",
+    title: "Executive Dashboard",
+    body: "A command view for KPIs, critical assets, AI-generated insights, and operational risk signals.",
+  },
+  {
+    route: "/documents",
+    title: "Document Intelligence",
+    body: "Drag, drop, paste, and inspect the ingestion pipeline from raw industrial text to structured knowledge.",
+  },
+  {
+    route: "/graph",
+    title: "Knowledge Graph",
+    body: "Explore how machines, failures, technicians, documents, and regulations connect across the plant.",
+  },
+  {
+    route: "/copilot",
+    title: "AI Copilot",
+    body: "Ask operational questions and get grounded answers with citations, confidence, and a visible reasoning trace.",
+  },
+  {
+    route: "/assets",
+    title: "Asset Explorer",
+    body: "Open digital profiles with status, maintenance timelines, health signals, and AI recommendations.",
+  },
+  {
+    route: "/rca",
+    title: "Root Cause Analysis",
+    body: "Generate evidence-backed incident timelines, contributing factors, and corrective/preventive actions.",
+  },
+  {
+    route: "/compliance",
+    title: "Compliance Center",
+    body: "Track audit readiness across Factory Act, ISO, OSHA, OISD, and other operational requirements.",
+  },
+  {
+    route: "/twin",
+    title: "Digital Twin",
+    body: "View a simplified plant layout where asset health and risk are visible at a glance.",
+  },
+];
+
+const IMPACT = [
+  "Faster troubleshooting because evidence is already connected.",
+  "Better maintenance planning through risk and RUL forecasting.",
+  "Clearer compliance posture with traceable document references.",
+  "Higher trust because every AI response shows sources and reasoning.",
 ];
 
 export default function Home() {
@@ -64,7 +159,7 @@ export default function Home() {
           </h1>
           <p className="text-[var(--muted)] text-base md:text-lg max-w-md mb-8">
             ATLAS AI connects every document, machine, technician, and regulation into one
-            reasoning engine — so it doesn&apos;t just retrieve information, it explains what to do next.
+            reasoning engine - so it doesn&apos;t just retrieve information, it explains what to do next.
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
@@ -83,7 +178,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Signature element: the reasoning trace */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -94,7 +188,10 @@ export default function Home() {
             <span className="text-xs font-mono uppercase tracking-wide text-[var(--muted)]">
               Copilot reasoning trace
             </span>
-            <span className="text-xs font-mono px-2 py-0.5 rounded-full" style={{ background: "var(--status-critical-soft)", color: "var(--status-critical)" }}>
+            <span
+              className="text-xs font-mono px-2 py-0.5 rounded-full"
+              style={{ background: "var(--status-critical-soft)", color: "var(--status-critical)" }}
+            >
               risk 82/100
             </span>
           </div>
@@ -125,7 +222,7 @@ export default function Home() {
             <div className="text-sm">
               Continue for <strong className="text-[var(--accent)]">17 days</strong>. Schedule bearing
               replacement in the Sunday 2AM maintenance window.{" "}
-              <span className="text-[var(--data)]">96% confidence</span> · 5 sources cited.
+              <span className="text-[var(--data)]">96% confidence</span> - 5 sources cited.
             </div>
           </motion.div>
         </motion.div>
@@ -133,8 +230,66 @@ export default function Home() {
 
       <section className="max-w-7xl mx-auto px-6 md:px-10 py-16">
         <div className="scan-divider mb-16" />
+        <div className="grid lg:grid-cols-[0.9fr_1.1fr] gap-10 items-start">
+          <div>
+            <span className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[var(--status-critical)] mb-4">
+              <AlertTriangle size={14} />
+              Project problem
+            </span>
+            <h2 className="font-display text-2xl md:text-3xl font-medium mb-4 max-w-xl">
+              Industrial teams are overloaded with information, but starved for connected context.
+            </h2>
+            <p className="text-[var(--muted)] max-w-xl leading-relaxed">
+              A plant can have years of manuals, inspection notes, maintenance logs, sensor readings,
+              compliance requirements, and incident reports. The hard part is not storing that data.
+              The hard part is knowing which detail matters right now, how it relates to the current
+              asset, and what decision it supports.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-4">
+            {PROBLEM_POINTS.map((point) => (
+              <div key={point} className="panel p-5">
+                <div className="h-1 w-8 rounded-full mb-4" style={{ background: "var(--status-critical)" }} />
+                <p className="text-sm text-[var(--muted)] leading-relaxed">{point}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="max-w-7xl mx-auto px-6 md:px-10 py-16">
+        <div className="grid lg:grid-cols-[0.85fr_1.15fr] gap-10 items-start">
+          <div>
+            <span className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[var(--status-healthy)] mb-4">
+              <CheckCircle2 size={14} />
+              Project solution
+            </span>
+            <h2 className="font-display text-2xl md:text-3xl font-medium mb-4 max-w-xl">
+              ATLAS AI turns disconnected operational data into a reasoning layer for the whole plant.
+            </h2>
+            <p className="text-[var(--muted)] max-w-xl leading-relaxed">
+              The platform combines document intelligence, entity extraction, a living knowledge graph,
+              GraphRAG retrieval, predictive maintenance, and root cause analysis. It is designed to
+              answer practical questions such as why an asset is risky, which evidence supports that
+              conclusion, and what action should be taken before downtime occurs.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            {SOLUTION_STEPS.map(({ icon: Icon, title, body }) => (
+              <div key={title} className="panel p-5">
+                <Icon size={18} style={{ color: "var(--accent)" }} className="mb-4" />
+                <h3 className="font-display text-base font-medium mb-2">{title}</h3>
+                <p className="text-sm text-[var(--muted)] leading-relaxed">{body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="max-w-7xl mx-auto px-6 md:px-10 py-16">
+        <div className="scan-divider mb-16" />
         <h2 className="font-display text-2xl md:text-3xl font-medium mb-3 max-w-lg">
-          It doesn&apos;t just answer questions — it reasons across your operation.
+          It doesn&apos;t just answer questions - it reasons across your operation.
         </h2>
         <p className="text-[var(--muted)] max-w-lg mb-12">
           Four systems work together under one roof, instead of four disconnected tools.
@@ -150,10 +305,72 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="max-w-7xl mx-auto px-6 md:px-10 py-16">
+        <div className="scan-divider mb-16" />
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5 mb-10">
+          <div>
+            <span className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[var(--data)] mb-4">
+              <Factory size={14} />
+              Website overview
+            </span>
+            <h2 className="font-display text-2xl md:text-3xl font-medium max-w-xl">
+              The website is a full demo platform, not only a landing page.
+            </h2>
+          </div>
+          <p className="text-[var(--muted)] max-w-md leading-relaxed">
+            Each route demonstrates a different part of the industrial AI workflow, from document
+            ingestion to executive decision support.
+          </p>
+        </div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {WEBSITE_MODULES.map(({ route, title, body }) => (
+            <Link key={route} href={route} className="panel p-5 hover:bg-[var(--surface-hover)] transition-colors">
+              <div className="text-xs font-mono text-[var(--data)] mb-3">{route}</div>
+              <h3 className="font-display text-sm font-medium mb-2">{title}</h3>
+              <p className="text-xs text-[var(--muted)] leading-relaxed">{body}</p>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="max-w-7xl mx-auto px-6 md:px-10 py-16">
+        <div className="grid lg:grid-cols-3 gap-4">
+          <div className="panel p-6">
+            <Database size={18} style={{ color: "var(--accent)" }} className="mb-4" />
+            <h2 className="font-display text-2xl font-medium mb-3">Built for a working demo.</h2>
+            <p className="text-sm text-[var(--muted)] leading-relaxed">
+              ATLAS AI runs with a local JSON data layer, offline embeddings, seeded demo assets,
+              and an optional OpenRouter model key. That makes it easy to present immediately while
+              keeping a clear path to Supabase, Qdrant, Neo4j, OCR services, and worker queues.
+            </p>
+          </div>
+          <div className="panel p-6">
+            <ShieldCheck size={18} style={{ color: "var(--status-healthy)" }} className="mb-4" />
+            <h2 className="font-display text-2xl font-medium mb-3">Designed for trust.</h2>
+            <p className="text-sm text-[var(--muted)] leading-relaxed">
+              The platform emphasizes cited evidence, traceable reasoning, confidence scores, and
+              graph context so users can inspect why an answer was produced before acting on it.
+            </p>
+          </div>
+          <div className="panel p-6">
+            <Gauge size={18} style={{ color: "var(--data)" }} className="mb-4" />
+            <h2 className="font-display text-2xl font-medium mb-3">Expected impact.</h2>
+            <div className="space-y-3">
+              {IMPACT.map((item) => (
+                <div key={item} className="flex items-start gap-2 text-sm text-[var(--muted)]">
+                  <span className="mt-2 h-1.5 w-1.5 rounded-full shrink-0" style={{ background: "var(--data)" }} />
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       <footer className="max-w-7xl mx-auto px-6 md:px-10 py-10 text-xs text-[var(--muted)] flex items-center justify-between">
-        <span>ATLAS AI — hackathon prototype, demo mode by default.</span>
+        <span>ATLAS AI - hackathon prototype, demo mode by default.</span>
         <Link href="/dashboard" className="hover:text-[var(--foreground)]">
-          Enter platform →
+          Enter platform -&gt;
         </Link>
       </footer>
     </div>

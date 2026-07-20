@@ -1,8 +1,8 @@
-// LLM layer — calls OpenRouter (OpenAI-compatible chat completions) when
-// OPENROUTER_API_KEY is set. The model is fully configurable via env so you
-// can point this at Claude, Gemini, DeepSeek, Llama, or Qwen without a code
-// change. If no key is configured, callLLM falls back to a deterministic
-// "reasoning" composer so every feature still demos convincingly offline.
+// LLM layer - calls OpenRouter (OpenAI-compatible chat completions) when
+// OPENROUTER_API_KEY is set. The model is configurable via env, so this can
+// point at Claude, Gemini, DeepSeek, Llama, or Qwen without a code change.
+// If no key is configured, callLLM falls back to a deterministic composer so
+// every feature still returns a grounded response offline.
 
 export interface ChatMessage {
   role: "system" | "user" | "assistant";
@@ -54,15 +54,10 @@ export async function callLLM(
   return offlineCompose(messages);
 }
 
-/**
- * Deterministic fallback used when no OPENROUTER_API_KEY is configured.
- * It doesn't call any network service — it composes a grounded answer
- * directly from the context the caller already placed in the prompt, so
- * retrieval quality (not LLM creativity) drives the demo.
- */
 function offlineCompose(messages: ChatMessage[]): string {
   const system = messages.find((m) => m.role === "system")?.content || "";
   const user = [...messages].reverse().find((m) => m.role === "user")?.content || "";
+  const systemLower = system.toLowerCase();
 
   const contextMatch = user.match(/CONTEXT:([\s\S]*?)(?:QUESTION:|TASK:|$)/i);
   const context = contextMatch?.[1]?.trim() ?? "";
@@ -71,27 +66,27 @@ function offlineCompose(messages: ChatMessage[]): string {
 
   const contextLines = context
     .split("\n")
-    .map((l) => l.trim())
+    .map((line) => line.trim())
     .filter(Boolean)
     .slice(0, 6);
 
-  if (system.toLowerCase().includes("root cause")) {
-    const evidenceLine = contextLines.find((l) => l.toLowerCase().startsWith("evidence:"));
-    const factorsLine = contextLines.find((l) => l.toLowerCase().startsWith("contributing factors"));
+  if (systemLower.includes("root cause analysis agent")) {
+    const evidenceLine = contextLines.find((line) => line.toLowerCase().startsWith("evidence:"));
+    const factorsLine = contextLines.find((line) => line.toLowerCase().startsWith("contributing factors"));
     return [
-      `Based on the maintenance and inspection evidence retrieved, the most consistent explanation is a progressive mechanical degradation pattern rather than a single sudden failure.`,
+      "Based on the maintenance and inspection evidence retrieved, the most consistent explanation is a progressive mechanical degradation pattern rather than a single sudden failure.",
       evidenceLine ? evidenceLine.slice(0, 260) : "",
       factorsLine ? factorsLine.slice(0, 200) : "",
-      `CORRECTIVE: Replace or repair the affected component before returning the asset to service, verified against OEM tolerance thresholds.`,
-      `PREVENTIVE: Add this failure mode to the preventive maintenance checklist and shorten the inspection interval for this asset class.`,
+      "CORRECTIVE: Replace or repair the affected component before returning the asset to service, verified against OEM tolerance thresholds.",
+      "PREVENTIVE: Add this failure mode to the preventive maintenance checklist and shorten the inspection interval for this asset class.",
     ]
       .filter(Boolean)
       .join("\n\n");
   }
 
-  if (system.toLowerCase().includes("maintenance intelligence")) {
-    const riskLine = contextLines.find((l) => l.toLowerCase().startsWith("risk score"));
-    const recentLine = contextLines.find((l) => l.toLowerCase().startsWith("recent maintenance"));
+  if (systemLower.includes("maintenance intelligence agent")) {
+    const riskLine = contextLines.find((line) => line.toLowerCase().startsWith("risk score"));
+    const recentLine = contextLines.find((line) => line.toLowerCase().startsWith("recent maintenance"));
     return [
       riskLine
         ? `${riskLine.replace(/Risk score: /i, "Given a risk score of ")} Recommend prioritizing an inspection before the next production run.`
@@ -102,25 +97,68 @@ function offlineCompose(messages: ChatMessage[]): string {
       .join(" ");
   }
 
-  if (system.toLowerCase().includes("executive")) {
+  if (systemLower.includes("executive")) {
     return [
       `Operational summary: ${contextLines[0] ?? "asset health is broadly stable with isolated risk pockets."}`,
       contextLines[1] ? `Notable trend: ${contextLines[1]}` : "",
-      `Recommendation: prioritize the highest risk-score assets for the next maintenance window and close open compliance gaps first.`,
+      "Recommendation: prioritize the highest risk-score assets for the next maintenance window and close open compliance gaps first.",
     ]
       .filter(Boolean)
       .join("\n\n");
   }
 
-  // Default: copilot-style grounded answer
   if (!contextLines.length) {
     return `I couldn't find grounded evidence for "${question}" in the indexed knowledge base yet. Try uploading a related document, or ask about an asset that already has documents and maintenance history linked.`;
   }
 
+  return composeCopilotAnswer(question, contextLines);
+}
+
+function composeCopilotAnswer(question: string, contextLines: string[]): string {
+  const lowerQuestion = question.toLowerCase();
+  const relevantLines = contextLines.slice(0, 5);
+
+  if (lowerQuestion.includes("why") || lowerQuestion.includes("risk")) {
+    const riskSignals = relevantLines.filter((line) =>
+      /risk|vibration|temperature|abnormal|lubrication|skipped|failure|telemetry|remaining useful life/i.test(line)
+    );
+    const evidence = riskSignals.length ? riskSignals : relevantLines.slice(0, 3);
+    return [
+      `The main risk indicators are ${evidence.join(" ")}`,
+      "Taken together, these point to elevated operational risk that should be checked before the next high-load run.",
+    ].join("\n\n");
+  }
+
+  if (lowerQuestion.includes("maintenance") || lowerQuestion.includes("due")) {
+    const maintenanceLines = relevantLines.filter((line) =>
+      /maintenance|inspection|lubrication|interval|replace|schedule|due|service/i.test(line)
+    );
+    return [
+      `${maintenanceLines[0] ?? relevantLines[0]}`,
+      maintenanceLines[1] ? `Related evidence: ${maintenanceLines.slice(1, 3).join(" ")}` : "",
+      "My recommendation is to prioritize the cited maintenance action and verify the latest asset readings before closing it.",
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+  }
+
+  if (lowerQuestion.includes("compliance") || lowerQuestion.includes("expir")) {
+    const complianceLines = relevantLines.filter((line) =>
+      /compliance|regulation|certificate|statutory|iso|osha|oisd|due|expir/i.test(line)
+    );
+    return [
+      `${complianceLines[0] ?? relevantLines[0]}`,
+      complianceLines[1] ? `Additional supporting context: ${complianceLines.slice(1, 3).join(" ")}` : "",
+      "Treat any expired or near-due item as a priority because the cited evidence is tied to audit readiness.",
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+  }
+
   return [
-    `${contextLines[0]}`,
-    contextLines.length > 1 ? `This is corroborated by: ${contextLines.slice(1, 3).join(" ")}` : "",
-    `Based on this, my assessment is that the situation warrants attention proportional to the evidence above — see the cited sources for full detail.`,
+    `${relevantLines[0]}`,
+    relevantLines.length > 1 ? `Supporting evidence: ${relevantLines.slice(1, 3).join(" ")}` : "",
+    `Based on the retrieved sources, that is the grounded answer I can provide for "${question}".`,
   ]
     .filter(Boolean)
     .join("\n\n");

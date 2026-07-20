@@ -24,7 +24,7 @@ export async function answerQuestion(question: string, history: string[] = []): 
     { role: "system" as const, content: SYSTEM_PROMPT },
     {
       role: "user" as const,
-      content: `CONTEXT:\n${retrieval.contextText || "(no matching context found)"}\n\nQUESTION: ${question}`,
+      content: `${history.length ? `RECENT CHAT:\n${history.slice(-6).join("\n")}\n\n` : ""}CONTEXT:\n${retrieval.contextText || "(no matching context found)"}\n\nQUESTION: ${question}`,
     },
   ];
 
